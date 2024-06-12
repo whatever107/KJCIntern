@@ -58,3 +58,101 @@ public class Anagram {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LOGIN 
+    import java.util.Scanner;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+public class clgReg {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Welcome to College Admission System");
+        System.out.println("1. Register");
+        System.out.println("2. Login");
+        System.out.print("Choose an option: ");
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                logreg.register();
+                break;
+            case 2:
+                System.out.print("Enter Student Email: ");
+                String email = scanner.next();
+                System.out.print("Enter Student Password: ");
+                String password = scanner.next();
+                if (logreg.login(email,password)) {
+                    System.out.println("Login successful.");
+                } else {
+                    System.out.println("Invalid email or password. Login failed.");
+                }
+                break;
+            default:
+                System.out.println("Invalid choice. Please select 1 or 2.");
+        }
+    }
+}
+class logreg{
+       public static MongoCollection<Document>studentCollection;
+       static {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("College");
+        studentCollection = database.getCollection("clgreg");}
+
+       public static void register(){
+           Scanner scanner = new Scanner(System.in);
+           System.out.println("Enter your Roll No");
+           String rn= scanner.nextLine();
+           System.out.println("Enter your email");
+           String email=scanner.nextLine() ;
+           System.out.println("Enter your password");
+           String password =scanner.nextLine();
+           if (!validateEmail(email)) {
+               System.out.println("Invalid email format. Registration failed.");
+           }
+           Document studentreg = new Document("Roll No", rn)
+                   .append("email", email)
+                   .append("password", password);
+           studentCollection.insertOne(studentreg);
+           System.out.println("Registration successful.");
+       }
+    public static boolean validateEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        return email.matches(emailRegex);
+    }
+    public static boolean login(String e,String p){
+           String email=e;
+           String password=p;
+        Document student = studentCollection.find(new Document("email", email)).first();
+        if (student != null) {
+            String storedPassword = student.getString("password");
+            return storedPassword.equals(password);
+        }
+        return false;
+    }
+}
+
+
